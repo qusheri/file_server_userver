@@ -1,18 +1,18 @@
 version: "2.3"
 
 services:
-    service_template-container:
+    file_server_userver-container:
         image: ghcr.io/userver-framework/ubuntu-22.04-userver-pg:latest
         privileged: true
         network_mode: bridge
         environment:
           - PREFIX=${PREFIX:-~/.local}
-          - CCACHE_DIR=/service_template/.ccache
+          - CCACHE_DIR=/file_server_userver/.ccache
           - CORES_DIR=/cores
         volumes:
-          - .:/service_template:rw
+          - .:/file_server_userver:rw
         ports:
           - 8080:8080
-        working_dir: /service_template
+        working_dir: /file_server_userver
         entrypoint:
           - ./tests/run_as_user.sh

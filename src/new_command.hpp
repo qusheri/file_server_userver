@@ -7,8 +7,8 @@
 
 namespace file_server_userver {
 
-std::string SayHelloTo(std::string_view name);
+std::string NewCommand(std::string_view name, std::string_view age);
 
-void AppendHello(userver::components::ComponentList &component_list);
+void AppendNewCommand(userver::components::ComponentList &component_list);
 
 } // namespace file_server_userver

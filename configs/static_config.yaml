@@ -51,6 +51,11 @@ components_manager:
             url_trailing_slash: strict-match
 
         handler-hello:                    # Finally! Our handler.
-            path: /hello                  # Registering handler by URL '/hello'.
+            path: /hello                 # Registering handler by URL '/hello'.
             method: GET,POST              # It will only reply to GET (HEAD) and POST requests.
             task_processor: main-task-processor  # Run it on CPU bound task processor
+        
+        handler-newcommand:
+            path: /leha
+            method: GET
+            task_processor: main-task-processor

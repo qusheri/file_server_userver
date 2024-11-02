@@ -67,17 +67,17 @@ jobs:
           - name: Test run after install
             if: matrix.make == 'test-release'
             run: >-
-                ./local_installation/bin/service_template
-                --config=./local_installation/etc/service_template/static_config.yaml
-                --config_vars=./local_installation/etc/service_template/config_vars.yaml
+                ./local_installation/bin/file_server_userver
+                --config=./local_installation/etc/file_server_userver/static_config.yaml
+                --config_vars=./local_installation/etc/file_server_userver/config_vars.yaml
                 &
 
           - name: Check work run service
             if: matrix.make == 'test-release'
             run: |
-                ps aux | grep service_template | grep config && curl http://localhost:8080/ping -v
+                ps aux | grep file_server_userver | grep config && curl http://localhost:8080/ping -v
 
           - name: Stop all
             if: matrix.make == 'test-release'
             run: |
-                killall service_template
+                killall file_server_userver

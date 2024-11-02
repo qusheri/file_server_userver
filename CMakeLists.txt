@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(service_template CXX)
+project(file_server_userver CXX)
 
 
 # Adding userver dependency
@@ -25,6 +25,12 @@ userver_setup_environment()
 add_library(${PROJECT_NAME}_objs OBJECT
     src/hello.hpp
     src/hello.cpp
+    src/new_command.hpp
+    src/new_command.cpp
+    src/file_divider/assembler.hpp
+    src/file_divider/assembler.cpp
+    src/file_divider/reader.hpp
+    src/file_divider/reader.cpp
 )
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::core)
 
