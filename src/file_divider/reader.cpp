@@ -30,7 +30,7 @@ std::vector<std::vector<char>> readFileByChunks(const std::string& filepath, siz
 
     for (size_t i = 0; i < numChunks; ++i) {
         size_t offset = i * chunkSize;
-        threads.emplace_back(readChunk, filepath, chunkSize, offset, std::ref(chunks[i]), std::ref(bytesRead[i]), std::ref(readMutex));
+        threads.emplace_back(readChunk, std::ref(file), chunkSize, offset, std::ref(chunks[i]), std::ref(bytesRead[i]), std::ref(readMutex));
     }
 
     for (auto& thread : threads) {

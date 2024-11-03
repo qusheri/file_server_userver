@@ -59,3 +59,8 @@ components_manager:
             path: /leha
             method: GET
             task_processor: main-task-processor
+
+        handler-uploadFile:
+            path: /uploadFile
+            method: POST
+            task_processor: main-task-processor
