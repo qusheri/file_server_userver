@@ -31,6 +31,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/file_divider/assembler.cpp
     src/file_divider/reader.hpp
     src/file_divider/reader.cpp
+    src/fileHandler.hpp
+    src/fileHandler.cpp
 )
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::core)
 
