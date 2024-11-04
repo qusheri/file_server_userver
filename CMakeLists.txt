@@ -27,10 +27,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/hello.cpp
     src/new_command.hpp
     src/new_command.cpp
-    src/file_divider/assembler.hpp
-    src/file_divider/assembler.cpp
-    src/file_divider/reader.hpp
-    src/file_divider/reader.cpp
+    src/file_divider/fileProcessing.hpp
+    src/file_divider/fileProcessing.cpp
     src/fileHandler.hpp
     src/fileHandler.cpp
 )

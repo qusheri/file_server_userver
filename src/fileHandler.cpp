@@ -30,19 +30,16 @@ public:
         return "Expected 'multipart/form-data' content type";
     }
     const auto& image = request.GetFormDataArg("profileImage");
-    static constexpr std::string_view kPngMagicBytes = "\x89PNG\r\n\x1a\n";
-    if (!utils::text::StartsWith(image.value, kPngMagicBytes)) {
-        request.GetHttpResponse().SetStatus(server::http::HttpStatus::kBadRequest);
-        return "Expecting PNG image format";
-    }
 
 
     const auto& fileArg = request.GetFormDataArg("profileImage");
     std::string fileName;
+
     if(!fileArg.filename){
       fileName = "errorFile.txt";
     }
-    else fileName = *(fileArg.filename);
+    else fileName = *(fileArg.filename);  
+    
     const std::string savePath = fmt::format("/home/kamilg/vsc_cpp/file_server_userver/sendedFilesTest/{}", fileName);
     std::ofstream file(savePath, std::ios::binary);
     if (!file) {
