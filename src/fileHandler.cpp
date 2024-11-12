@@ -5,7 +5,7 @@
 #include <userver/server/handlers/http_handler_base.hpp>
 #include <userver/http/common_headers.hpp>
 #include <userver/utils/text.hpp>
-
+#include "db_funcs/sql_class.hpp"
 
 #include <fstream>
 
@@ -31,7 +31,6 @@ public:
     }
     const auto& image = request.GetFormDataArg("profileImage");
 
-
     const auto& fileArg = request.GetFormDataArg("profileImage");
     std::string fileName;
 
@@ -40,31 +39,32 @@ public:
     }
     else fileName = *(fileArg.filename);  
     
+    SQL db;
+    db.addFile(fileName, "18", "52");
+
     const std::string savePath = fmt::format("/home/kamilg/vsc_cpp/file_server_userver/sendedFilesTest/{}", fileName);
     std::ofstream file(savePath, std::ios::binary);
     if (!file) {
         request.GetHttpResponse().SetStatus(server::http::HttpStatus::kInternalServerError);
         return "Failed to open file for writing";
     }
-    file.write(image.value.data(), image.value.size());
-    file.close();
+    // file.write(image.value.data(), image.value.size());
+    // file.close();
 
 
     request.GetHttpResponse().SetContentType(http::content_type::kApplicationJson);
-    const auto& address = request.GetFormDataArg("address");
-    auto json_addr = formats::json::FromString(address.value);
-    return fmt::format("city={} image_size={}\n", json_addr["city"].As<std::string>(), image.value.size());
+    return fmt::format("city=NIZHNEKAMSK, image_size={}\n", image.value.size());
   }
 };
 
 } // namespace
 
-std::string getFile(std::string_view name) {
-  if (name.empty()) {
-    name = "unknown user";
+std::string getFile(std::string_view token) {
+  if (token.empty()) {
+    token = "unknown user";
   }
 
-  return fmt::format("Hello, this is file server!\n", name);
+  return fmt::format("Hello, this is file server!\n", token);
 }
 
 void AppendGetFile(userver::components::ComponentList &component_list) {

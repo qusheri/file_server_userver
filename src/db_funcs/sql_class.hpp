@@ -17,6 +17,7 @@ public:
     std::string addSession(const std::string& userId);
     long long userId_num(const std::string& userName);
     std::string userId_str(const std::string& userName);
+    void addFile(const std::string& fileName, const std::string& userId, const std::string& fileSize);
 
 private:
     std::string db_host = std::getenv("DB_HOST");

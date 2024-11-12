@@ -145,6 +145,7 @@ long long SQL::userId_num(const std::string& userName){
     }
     throw std::out_of_range("User " + userName + " doesn't exist");
 }
+
 std::string SQL::userId_str(const std::string& userName){
     pqxx::work txn(*conn);
     pqxx::result result = txn.exec("SELECT id FROM users WHERE username = '" + userName + "';");
@@ -152,4 +153,14 @@ std::string SQL::userId_str(const std::string& userName){
         return row["id"].as<std::string>();
     }
     throw std::out_of_range("User " + userName + " doesn't exist");
+}
+
+
+void SQL::addFile(const std::string& fileName, const std::string& userId, const std::string& fileSize){
+    pqxx::work txn(*conn);
+    std::string query = "INSERT INTO files(user_id, filename, file_size, chunks_ids) VALUES (" + userId + ", '" + fileName + "', " + fileSize + " ," + "ARRAY[1,2,3]::BIGINT[]) RETURNING file_id;";
+    pqxx::result result = txn.exec(query);
+    long long fileId = result[0][0].as<long long>();
+    std::cout << std::endl << std::endl << std::endl << std::endl << fileId << std::endl << std::endl << std::endl << std::endl;
+    txn.commit();
 }

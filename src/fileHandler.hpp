@@ -7,7 +7,7 @@
 
 namespace file_server_userver {
 
-std::string getFile(std::string_view name);
+std::string getFile(std::string_view token);
 
 void AppendGetFile(userver::components::ComponentList &component_list);
 

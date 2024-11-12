@@ -30,7 +30,7 @@ namespace fileProcessing{
         }
     }   //namespace
 
-    std::vector<std::vector<char>> rwFileByChunks(const std::string& filepath, size_t chunkSize) {
+    std::vector<std::vector<char>> readFileByChunks(const std::string& filepath, size_t chunkSize) {
         std::ifstream file(filepath, std::ios::binary | std::ios::ate);
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open file");
