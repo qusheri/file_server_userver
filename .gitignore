@@ -13,3 +13,5 @@ cmake-build-*
 Testing/
 .DS_Store
 Makefile.local
+futureFeatures.txt
+env

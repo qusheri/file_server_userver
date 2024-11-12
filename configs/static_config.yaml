@@ -64,3 +64,13 @@ components_manager:
             path: /uploadFile
             method: POST
             task_processor: main-task-processor
+
+        handler-signup:
+            path: /reg
+            method: GET,POST
+            task_processor: main-task-processor
+
+        handler-signin:
+            path: /signin
+            method: GET,POST
+            task_processor: main-task-processor

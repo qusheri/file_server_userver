@@ -3,36 +3,34 @@
 #include <sstream>
 #include <thread>
 
-class fileProcessing{
-private:
+namespace fileProcessing{
+    namespace{
+        void readChunk(std::ifstream& file, size_t chunkSize, size_t offset, std::vector<char>& buffer, size_t& bytesRead, std::mutex& readMutex) {
+            std::lock_guard<std::mutex> lock(readMutex);
+            file.seekg(offset);
+            file.read(buffer.data(), chunkSize);
+            bytesRead = file.gcount();
+        }
 
-    void readChunk(std::ifstream& file, size_t chunkSize, size_t offset, std::vector<char>& buffer, size_t& bytesRead, std::mutex& readMutex) {
-        std::lock_guard<std::mutex> lock(readMutex);
-        file.seekg(offset);
-        file.read(buffer.data(), chunkSize);
-        bytesRead = file.gcount();
-    }
+        void readAndAssembleChunk(std::ifstream& file, std::ofstream& destinationFile, size_t chunkSize, size_t offset, std::mutex& outputMutex){
+            std::lock_guard<std::mutex> lock(outputMutex);
 
-    void readAndAssembleChunk(std::ifstream& file, std::ofstream& destinationFile, size_t chunkSize, size_t offset, std::mutex& outputMutex){
-        std::lock_guard<std::mutex> lock(outputMutex);
+            std::vector<char> buffer(chunkSize);
+            size_t bytesRead;
+            
+            //read
+            file.seekg(offset);
+            file.read(buffer.data(), chunkSize);
+            bytesRead = file.gcount(); 
+            
+            //write
+            destinationFile.write(buffer.data(), bytesRead);
+            file.close();
+            destinationFile.close();
+        }
+    }   //namespace
 
-        std::vector<char> buffer(chunkSize);
-        size_t bytesRead;
-        
-        //read
-        file.seekg(offset);
-        file.read(buffer.data(), chunkSize);
-        bytesRead = file.gcount(); 
-        
-        //write
-        destinationFile.write(buffer.data(), bytesRead);
-        file.close();
-        destinationFile.close();
-    }
-
-public:
-
-    std::vector<std::vector<char>> readFileByChunks(const std::string& filepath, size_t chunkSize) {
+    std::vector<std::vector<char>> rwFileByChunks(const std::string& filepath, size_t chunkSize) {
         std::ifstream file(filepath, std::ios::binary | std::ios::ate);
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open file");
@@ -104,4 +102,4 @@ public:
         }
     }
 
-};
+}   //namespace fileProcessing

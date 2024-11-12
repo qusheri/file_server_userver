@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(file_server_userver CXX)
 
-
 # Adding userver dependency
 find_package(userver COMPONENTS core postgresql QUIET)
 if(NOT userver_FOUND)  # Fallback to subdirectory usage
@@ -21,6 +20,15 @@ endif()
 userver_setup_environment()
 
 
+# Adding Postgres dependency
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PQXX REQUIRED libpqxx)
+
+
+#Adding OpenSSL
+find_package(OpenSSL REQUIRED)
+
+
 # Common sources
 add_library(${PROJECT_NAME}_objs OBJECT
     src/hello.hpp
@@ -31,8 +39,26 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/file_divider/fileProcessing.cpp
     src/fileHandler.hpp
     src/fileHandler.cpp
+    src/db_funcs/sql_class.hpp
+    src/db_funcs/sql_class.cpp
+    src/users/authorization.hpp
+    src/users/authorization.cpp
+    src/users/registration.hpp
+    src/users/registration.cpp
+    src/openSSL_hashing/hashing.hpp
+    src/openSSL_hashing/hashing.cpp
 )
+
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::core)
+
+
+#OpenSSL
+target_link_libraries(${PROJECT_NAME}_objs PRIVATE OpenSSL::Crypto)
+
+
+# Postgres
+target_include_directories(${PROJECT_NAME}_objs PRIVATE ${PQXX_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}_objs PRIVATE ${PQXX_LIBRARIES})
 
 
 # The Service
