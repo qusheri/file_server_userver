@@ -27,16 +27,16 @@ namespace {
 
 std::string signin(std::string_view name, std::string_view password) {
   if (name.empty()) {
-    throw std::out_of_range("Also input your login");
+    throw std::out_of_range("Also input your login\n");
   }
 
   if(password.empty()){
-    throw std::out_of_range("Also input your password");
+    throw std::out_of_range("Also input your password\n");
   }
 
   SQL db;
   bool user_exists = db.validateUser(name.data(), password.data());
-  if(!user_exists) return fmt::format("Sign up first");
+  if(!user_exists) return fmt::format("Sign up first\n");
   std::string token = db.addSession(db.userId_str(name.data()));
 
   return fmt::format("user have loginned with: username = {} and password = {}.\n There is your auth token: \n{}\nRemember ot copy this token. With that token you will make requests to server.\n", name, password, token);

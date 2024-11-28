@@ -8,6 +8,7 @@
 #include "db_funcs/sql_class.hpp"
 
 #include <fstream>
+#include <iostream>
 
 namespace file_server_userver {
 
@@ -21,7 +22,7 @@ public:
 
   std::string HandleRequestThrow(
       const userver::server::http::HttpRequest &request,
-      userver::server::request::RequestContext &) const override { 
+      userver::server::request::RequestContext &) const override {
     auto header = request.GetHeader(userver::http::headers::kContentType);
     const auto content_type = userver::http::ContentType(header);
     using namespace userver;
@@ -38,7 +39,6 @@ public:
       fileName = "errorFile.txt";
     }
     else fileName = *(fileArg.filename);  
-    
     SQL db;
     db.addFile(fileName, "18", "52");
 

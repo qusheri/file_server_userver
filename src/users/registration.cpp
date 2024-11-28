@@ -29,11 +29,11 @@ namespace {
 
 std::string signup(std::string_view name, std::string_view password) {
   if (name.empty()) {
-    throw std::out_of_range("Also input your username");
+    throw std::out_of_range("Also input your username\n");
   }
 
   if(password.empty()){
-    throw std::out_of_range("Also input your password");
+    throw std::out_of_range("Also input your password\n");
   }
   SQL db;
   db.addUser(name.data(), password.data());

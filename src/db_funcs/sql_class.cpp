@@ -120,16 +120,20 @@ void SQL::addUser(const std::string& userName, const std::string& password){
     }
 }
 
-bool SQL::validateSession(const std::string& userId){
+std::pair<bool, std::string> SQL::validateSession(const std::string& userId){
     pqxx::work txn(*conn);
-    pqxx::result result = txn.exec("SELECT expires_at FROM sessions WHERE user_id = " + userId + " AND expires_at > CURRENT_TIMESTAMP");
-    return !result.empty();
+    pqxx::result result = txn.exec("SELECT * FROM sessions WHERE user_id = " + userId + " AND expires_at > CURRENT_TIMESTAMP");
+    if(!result.empty()){
+        return {true, result[0]["token"].c_str()};
+    }
+    return {false, "null"};
 }
 
 std::string SQL::addSession(const std::string& userId){
     const std::string token = hashing::generateToken();
-    if(validateSession(userId)){
-        throw std::out_of_range("Session is already active");
+    auto session = validateSession(userId);
+    if(session.first){
+        return ("Your session is already active\nThere is your token : " + session.second);
     }
     pqxx::work txn(*conn);
     txn.exec("INSERT INTO sessions (user_id, token) VALUES (" + userId + ", '" + token + "');");

@@ -13,7 +13,7 @@ public:
     void insertRow(const std::string& tableName, const std::string& values);
     bool validateUser(const std::string& id, const std::string& password_hash);
     void addUser(const std::string& userName, const std::string& password);
-    bool validateSession(const std::string& userId);
+    std::pair<bool, std::string> validateSession(const std::string& userId);
     std::string addSession(const std::string& userId);
     long long userId_num(const std::string& userName);
     std::string userId_str(const std::string& userName);
