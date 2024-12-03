@@ -66,11 +66,11 @@ components_manager:
             task_processor: main-task-processor
 
         handler-signup:
-            path: /reg
+            path: /signup
             method: POST
             task_processor: main-task-processor
 
         handler-signin:
             path: /signin
-            method: GET,POST
+            method: POST
             task_processor: main-task-processor

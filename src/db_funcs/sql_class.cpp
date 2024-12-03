@@ -79,23 +79,14 @@ bool SQL::validateUser(const std::string& userName, const std::string& password)
 
     pqxx::work txn(*conn);
 
-    std::string query = "SELECT * FROM users WHERE username = '" + userName + "'";
-    pqxx::result result = txn.exec(query);
+    pqxx::result result = txn.exec_params("SELECT password_hash, salt FROM users WHERE username = $1", userName);
 
-    bool user_exists = false;
-    for(auto row: result){
-        user_exists = true;
-    }
+    if (result.empty()) return false;
 
-    if(user_exists){
-        for(auto row: result){
-            std::string salt = row["salt"].as<std::string>();
-            if(row["password_hash"].as<std::string>() == hashing::hashPassword(password, salt).first){
-                return true;
-            }
-        }
-    }
-    return false;
+    std::string db_password_hash = result[0]["password_hash"].as<std::string>();
+    std::string salt = result[0]["salt"].as<std::string>();
+
+    return db_password_hash == hashing::hashPassword(password, salt).first;
 }
 
 void SQL::addUser(const std::string& userName, const std::string& password){
@@ -103,68 +94,90 @@ void SQL::addUser(const std::string& userName, const std::string& password){
 
     pqxx::work txn(*conn);
 
-    std::string query = "SELECT username FROM users WHERE username = '" + userName + "';";
-    bool userName_exists = false;
-    pqxx::result result = txn.exec(query);
-    for(auto row: result){
-        userName_exists = true;
-    }
-
-    if(!userName_exists){
-        std::pair<std::string, std::string> password_hash = hashing::hashPassword(password);
-        txn.exec("INSERT INTO users (username, password_hash, salt) VALUES ('" + userName + "', '" + password_hash.first + "', '" + password_hash.second + "');");
-        txn.commit();
-    }
-    else{
+    pqxx::result result = txn.exec_params("SELECT username FROM users WHERE username = $1", userName);
+    if (!result.empty()) {
         throw std::out_of_range("User already exists");
     }
+
+    auto [password_hash, salt] = hashing::hashPassword(password);
+
+    txn.exec_params("INSERT INTO users (username, password_hash, salt) VALUES ($1, $2, $3)",
+                    userName, password_hash, salt);
+    txn.commit();
 }
 
 std::pair<bool, std::string> SQL::validateSession(const std::string& userId){
     pqxx::work txn(*conn);
-    pqxx::result result = txn.exec("SELECT * FROM sessions WHERE user_id = " + userId + " AND expires_at > CURRENT_TIMESTAMP");
-    if(!result.empty()){
-        return {true, result[0]["token"].c_str()};
+    pqxx::result result = txn.exec_params(
+        "SELECT token FROM sessions WHERE user_id = $1 AND expires_at > CURRENT_TIMESTAMP", userId);
+    if (!result.empty()) {
+        return {true, result[0]["token"].as<std::string>()};
     }
     return {false, "null"};
 }
 
+std::pair<bool, std::vector<std::string>> SQL::validateToken(const std::string& token){
+    pqxx::work txn(*conn);
+    pqxx::result result = txn.exec_params("SELECT * FROM sessions WHERE token = $1 AND expires_at > CURRENT_TIMESTAMP", token);
+    if(result.empty()){
+        return {false, {}};
+    }
+    std::vector<std::string> results;
+    for (auto res: result){
+        results.push_back(res["session_id"].as<std::string>());
+        results.push_back(res["user_id"].as<std::string>());
+        results.push_back(res["token"].as<std::string>());
+        results.push_back(res["expires_at"].as<std::string>());
+    }
+    return {true, results};
+}
+
 std::string SQL::addSession(const std::string& userId){
     const std::string token = hashing::generateToken();
+
     auto session = validateSession(userId);
-    if(session.first){
-        return ("Your session is already active\nThere is your token : " + session.second);
+    if (session.first) {
+        return "Your session is already active\nThere is your token : " + session.second;
     }
+
     pqxx::work txn(*conn);
-    txn.exec("INSERT INTO sessions (user_id, token) VALUES (" + userId + ", '" + token + "');");
+    txn.exec_params("INSERT INTO sessions (user_id, token) VALUES ($1, $2)", userId, token);
     txn.commit();
     return token;
 }
 
 long long SQL::userId_num(const std::string& userName){
     pqxx::work txn(*conn);
-    pqxx::result result = txn.exec("SELECT id FROM users WHERE username = '" + userName + "';");
-    for(auto row: result){
-        return row["id"].as<long long>();
+    pqxx::result result = txn.exec_params("SELECT id FROM users WHERE username = $1", userName);
+    if (!result.empty()) {
+        return result[0]["id"].as<long long>();
     }
     throw std::out_of_range("User " + userName + " doesn't exist");
 }
 
 std::string SQL::userId_str(const std::string& userName){
     pqxx::work txn(*conn);
-    pqxx::result result = txn.exec("SELECT id FROM users WHERE username = '" + userName + "';");
-    for(auto row: result){
-        return row["id"].as<std::string>();
+    pqxx::result result = txn.exec_params("SELECT id FROM users WHERE username = $1", userName);
+    if (!result.empty()) {
+        return result[0]["id"].as<std::string>();
     }
     throw std::out_of_range("User " + userName + " doesn't exist");
 }
 
-
 void SQL::addFile(const std::string& fileName, const std::string& userId, const std::string& fileSize){
     pqxx::work txn(*conn);
-    std::string query = "INSERT INTO files(user_id, filename, file_size, chunks_ids) VALUES (" + userId + ", '" + fileName + "', " + fileSize + " ," + "ARRAY[1,2,3]::BIGINT[]) RETURNING file_id;";
-    pqxx::result result = txn.exec(query);
-    long long fileId = result[0][0].as<long long>();
-    std::cout << std::endl << std::endl << std::endl << std::endl << fileId << std::endl << std::endl << std::endl << std::endl;
+    pqxx::result result = txn.exec_params(
+        "INSERT INTO files(user_id, filename, file_size, chunks_ids) "
+        "VALUES ($1, $2, $3, ARRAY[1,2,3]::BIGINT[]) RETURNING file_id",
+        userId, fileName, fileSize);
+    long long fileId = result[0]["file_id"].as<long long>();
     txn.commit();
+}
+
+pqxx::result SQL::exec(const std::string& command){
+    if (!conn || !conn->is_open()) {
+        throw std::runtime_error("No database connection");
+    }
+    pqxx::work txn(*conn);
+    return txn.exec(command);
 }

@@ -6,6 +6,7 @@
 #include <userver/http/common_headers.hpp>
 #include <userver/utils/text.hpp>
 #include "db_funcs/sql_class.hpp"
+#include "session_control/session.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -23,6 +24,10 @@ public:
   std::string HandleRequestThrow(
       const userver::server::http::HttpRequest &request,
       userver::server::request::RequestContext &) const override {
+    LOG_INFO() << "filehandler52";
+    std::string_view token = request.GetArg("token");
+    LOG_INFO() << "THERE IS TOKEN\n";
+    LOG_INFO() << token; 
     auto header = request.GetHeader(userver::http::headers::kContentType);
     const auto content_type = userver::http::ContentType(header);
     using namespace userver;
@@ -38,9 +43,10 @@ public:
     if(!fileArg.filename){
       fileName = "errorFile.txt";
     }
-    else fileName = *(fileArg.filename);  
+    else fileName = *(fileArg.filename);
     SQL db;
-    db.addFile(fileName, "18", "52");
+    Session session("token");
+    db.addFile(fileName, session.user_id, std::to_string(fileArg.value.size()));
 
     const std::string savePath = fmt::format("/home/kamilg/vsc_cpp/file_server_userver/sendedFilesTest/{}", fileName);
     std::ofstream file(savePath, std::ios::binary);
@@ -48,8 +54,8 @@ public:
         request.GetHttpResponse().SetStatus(server::http::HttpStatus::kInternalServerError);
         return "Failed to open file for writing";
     }
-    // file.write(image.value.data(), image.value.size());
-    // file.close();
+    file.write(image.value.data(), image.value.size());
+    file.close();
 
 
     request.GetHttpResponse().SetContentType(http::content_type::kApplicationJson);
@@ -63,17 +69,14 @@ std::string getFile(std::string_view token) {
   if (token.empty()) {
     token = "unknown user";
   }
+  LOG_INFO() << "filehandler52";
 
   return fmt::format("Hello, this is file server!\n", token);
 }
 
 void AppendGetFile(userver::components::ComponentList &component_list) {
+    LOG_INFO() << "filehandler52";
   component_list.Append<FileHandler>();
 }
 
 } // namespace file_server_userver
-
-
-// curl -v -F address='{"street": "3, Garden St", "city": "Hillsbery, UT"}' \
-//           -F "profileImage=@src/file_divider/kitten.png" \
-//           http://localhost:8080/uploadFile

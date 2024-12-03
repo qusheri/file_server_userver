@@ -39,6 +39,8 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/file_divider/fileProcessing.cpp
     src/fileHandler.hpp
     src/fileHandler.cpp
+    src/session_control/session.hpp
+    src/session_control/session.cpp
     src/db_funcs/sql_class.hpp
     src/db_funcs/sql_class.cpp
     src/users/authorization.hpp

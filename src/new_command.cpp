@@ -3,7 +3,7 @@
 #include <fmt/format.h>
 
 #include <userver/server/handlers/http_handler_base.hpp>
-
+#include <userver/logging/log.hpp>
 namespace file_server_userver {
 
 namespace {
@@ -27,7 +27,7 @@ std::string NewCommand(std::string_view name, std::string_view age) {
   if (name.empty()) {
     name = "unknown user";
   }
-
+  LOG_INFO() << "STARTING LEHA ALEXEY";
   if(age.empty()){
     age = "52";
   }

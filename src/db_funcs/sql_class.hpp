@@ -14,10 +14,12 @@ public:
     bool validateUser(const std::string& id, const std::string& password_hash);
     void addUser(const std::string& userName, const std::string& password);
     std::pair<bool, std::string> validateSession(const std::string& userId);
+    std::pair<bool, std::vector<std::string>> validateToken(const std::string& token);
     std::string addSession(const std::string& userId);
     long long userId_num(const std::string& userName);
     std::string userId_str(const std::string& userName);
     void addFile(const std::string& fileName, const std::string& userId, const std::string& fileSize);
+    pqxx::result exec(const std::string& command);
 
 private:
     std::string db_host = std::getenv("DB_HOST");
